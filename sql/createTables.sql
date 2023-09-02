@@ -1,8 +1,9 @@
-DROP TABLE IF EXISTS food;
+drop table if exists task_tracker;
 
-CREATE TABLE  food (
-    id          serial PRIMARY KEY,
-    title       varchar(40) NOT NULL
-);
-
-INSERT INTO food (title) VALUES ('sourdough'), ('olive oil'), ('pizza'), ('picanha'), ('gorgonzola'), ('basil');
+create table task_tracker (
+  
+ id serial primary key,
+ task_name varchar(255),
+ cycle_duration varchar(255),
+  start_date timestamp default current_timestamp
+  );
