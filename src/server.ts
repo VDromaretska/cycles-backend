@@ -29,3 +29,21 @@ app.get("/health-check", async (_req, res) => {
         res.status(500).send("An error occurred. Check server logs.");
     }
 });
+
+app.get("/cycles", async (_req, res) => {
+    try {
+        const response = await client.query("select * from task_tracker");
+        const taskList: TaskItemData[] = response.rows;
+
+        res.status(200).json(taskList);
+    } catch (error) {
+        console.log("Error GET tasks request", error);
+    }
+});
+
+interface TaskItemData {
+    id: number;
+    cycle_name: string;
+    cycle_duration_days: number;
+    cycle_start_date: Date;
+}
