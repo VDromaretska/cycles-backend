@@ -6,4 +6,5 @@ export function addProperties(obj: TaskCycleData) {
         caculateCompletionPercentageAndDaysOverdue(obj);
     obj.completion_percentage = completionPercentage;
     obj.days_overdue = daysOverdue;
+    return obj;
 }
