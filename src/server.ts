@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { Client } from "pg";
+import { addProperties } from "./support/addProperties";
 
 dotenv.config();
 const client = new Client(process.env.DATABASE_URL);
@@ -44,36 +45,11 @@ app.get("/cycles", async (_req, res) => {
     }
 });
 
-interface TaskCycleData {
+export interface TaskCycleData {
     id: number;
     cycle_name: string;
     cycle_duration_days: number;
     cycle_start_date: Date;
     completion_percentage?: number;
     days_overdue?: number;
-}
-
-function caculateCompletionPercentageAndDaysOverdue(cycle: TaskCycleData) {
-    const currentDate = new Date();
-    const timeDifferenceInMilisec =
-        currentDate.getTime() - cycle.cycle_start_date.getTime();
-    const MilisecInDay = 1000 * 60 * 60 * 24;
-    const timeDifferenceInDays = Math.floor(
-        timeDifferenceInMilisec / MilisecInDay
-    );
-    const daysOverdue = timeDifferenceInDays - cycle.cycle_duration_days;
-    const completionPercentage =
-        (timeDifferenceInDays * 100) / cycle.cycle_duration_days;
-
-    if (completionPercentage > 100) {
-        return [completionPercentage, daysOverdue];
-    }
-    return [completionPercentage, 0];
-}
-
-function addProperties(obj: TaskCycleData) {
-    const [completionPercentage, daysOverdue] =
-        caculateCompletionPercentageAndDaysOverdue(obj);
-    obj.completion_percentage = completionPercentage;
-    obj.days_overdue = daysOverdue;
 }
