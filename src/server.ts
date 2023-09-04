@@ -16,6 +16,7 @@ async function connectToDBAndStartListening() {
     console.log("Connected to DB!");
     const port = process.env.PORT;
     app.listen(port, () => console.log(`Listening on port ${port}`));
+    console.log("Listening");
 }
 connectToDBAndStartListening();
 
@@ -30,12 +31,21 @@ app.get("/health-check", async (_req, res) => {
         res.status(500).send("An error occurred. Check server logs.");
     }
 });
+app.get("/", async (_req, res) => {
+    try {
+        const prompt = "Nothing here";
+        res.json(prompt);
+        console.log(prompt);
+    } catch (error) {
+        console.log("Error /Get", error);
+    }
+});
 
 app.get("/cycles", async (_req, res) => {
     try {
         const { rows } = await client.query("select * from cycle_tracker");
         const taskList: TaskCycleData[] = rows;
-        const taskListWithCompletionData = taskList.forEach((obj) =>
+        const taskListWithCompletionData = taskList.map((obj) =>
             addProperties(obj)
         );
         res.status(200).json(taskListWithCompletionData);
