@@ -8,17 +8,7 @@ dotenv.config();
 const client = new Client(process.env.DATABASE_URL);
 const app = express();
 app.use(express.json());
-app.use(cors);
-
-async function connectToDBAndStartListening() {
-    console.log("Attempting connecting to DB");
-    await client.connect();
-    console.log("Connected to DB!");
-    const port = process.env.PORT;
-    app.listen(port, () => console.log(`Listening on port ${port}`));
-    console.log("Listening");
-}
-connectToDBAndStartListening();
+app.use(cors());
 
 app.get("/health-check", async (_req, res) => {
     try {
@@ -35,7 +25,6 @@ app.get("/", async (_req, res) => {
     try {
         const prompt = "Nothing here";
         res.json(prompt);
-        console.log(prompt);
     } catch (error) {
         console.log("Error /Get", error);
     }
@@ -63,3 +52,11 @@ export interface TaskCycleData {
     completion_percentage?: number;
     days_overdue?: number;
 }
+async function connectToDBAndStartListening() {
+    console.log("Attempting connecting to DB");
+    await client.connect();
+    console.log("Connected to DB!");
+    const port = process.env.PORT;
+    app.listen(port, () => console.log(`Listening on port ${port}`));
+}
+connectToDBAndStartListening();
