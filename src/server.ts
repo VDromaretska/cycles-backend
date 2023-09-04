@@ -1,24 +1,24 @@
+import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import express from "express";
 import { Client } from "pg";
-import { getEnvVarOrFail } from "./support/envVarUtils";
-import { setupDBClientConfig } from "./support/setupDBClientConfig";
+import { addProperties } from "./support/addProperties";
 
-dotenv.config(); //Read .env file lines as though they were env vars.
-
-const dbClientConfig = setupDBClientConfig();
-const client = new Client(dbClientConfig);
-
-//Configure express routes
+dotenv.config();
+const client = new Client(process.env.DATABASE_URL);
 const app = express();
+app.use(express.json());
+app.use(cors);
 
-app.use(express.json()); //add JSON body parser to each following route handler
-app.use(cors()); //add CORS support to each following route handler
-
-app.get("/", async (_req, res) => {
-    res.json({ msg: "Hello! There's nothing interesting for GET /" });
-});
+async function connectToDBAndStartListening() {
+    console.log("Attempting connecting to DB");
+    await client.connect();
+    console.log("Connected to DB!");
+    const port = process.env.PORT;
+    app.listen(port, () => console.log(`Listening on port ${port}`));
+    console.log("Listening");
+}
+connectToDBAndStartListening();
 
 app.get("/health-check", async (_req, res) => {
     try {
@@ -31,18 +31,35 @@ app.get("/health-check", async (_req, res) => {
         res.status(500).send("An error occurred. Check server logs.");
     }
 });
+app.get("/", async (_req, res) => {
+    try {
+        const prompt = "Nothing here";
+        res.json(prompt);
+        console.log(prompt);
+    } catch (error) {
+        console.log("Error /Get", error);
+    }
+});
 
-connectToDBAndStartListening();
-
-async function connectToDBAndStartListening() {
-    console.log("Attempting to connect to db");
-    await client.connect();
-    console.log("Connected to db!");
-
-    const port = getEnvVarOrFail("PORT");
-    app.listen(port, () => {
-        console.log(
-            `Server started listening for HTTP requests on port ${port}.  Let's go!`
+app.get("/cycles", async (_req, res) => {
+    try {
+        const { rows } = await client.query("select * from cycle_tracker");
+        const taskList: TaskCycleData[] = rows;
+        const taskListWithCompletionData = taskList.map((obj) =>
+            addProperties(obj)
         );
-    });
+        res.status(200).json(taskListWithCompletionData);
+    } catch (error) {
+        console.log("Error GET tasks request", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+export interface TaskCycleData {
+    id: number;
+    cycle_name: string;
+    cycle_duration_days: number;
+    cycle_start_date: Date;
+    completion_percentage?: number;
+    days_overdue?: number;
 }
