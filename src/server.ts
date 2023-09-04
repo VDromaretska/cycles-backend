@@ -32,18 +32,48 @@ app.get("/health-check", async (_req, res) => {
 
 app.get("/cycles", async (_req, res) => {
     try {
-        const response = await client.query("select * from task_tracker");
-        const taskList: TaskItemData[] = response.rows;
-
-        res.status(200).json(taskList);
+        const { rows } = await client.query("select * from cycle_tracker");
+        const taskList: TaskCycleData[] = rows;
+        const taskListWithCompletionData = taskList.forEach((obj) =>
+            addProperties(obj)
+        );
+        res.status(200).json(taskListWithCompletionData);
     } catch (error) {
         console.log("Error GET tasks request", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
-interface TaskItemData {
+interface TaskCycleData {
     id: number;
     cycle_name: string;
     cycle_duration_days: number;
     cycle_start_date: Date;
+    completion_percentage?: number;
+    days_overdue?: number;
+}
+
+function caculateCompletionPercentageAndDaysOverdue(cycle: TaskCycleData) {
+    const currentDate = new Date();
+    const timeDifferenceInMilisec =
+        currentDate.getTime() - cycle.cycle_start_date.getTime();
+    const MilisecInDay = 1000 * 60 * 60 * 24;
+    const timeDifferenceInDays = Math.floor(
+        timeDifferenceInMilisec / MilisecInDay
+    );
+    const daysOverdue = timeDifferenceInDays - cycle.cycle_duration_days;
+    const completionPercentage =
+        (timeDifferenceInDays * 100) / cycle.cycle_duration_days;
+
+    if (completionPercentage > 100) {
+        return [completionPercentage, daysOverdue];
+    }
+    return [completionPercentage, 0];
+}
+
+function addProperties(obj: TaskCycleData) {
+    const [completionPercentage, daysOverdue] =
+        caculateCompletionPercentageAndDaysOverdue(obj);
+    obj.completion_percentage = completionPercentage;
+    obj.days_overdue = daysOverdue;
 }
