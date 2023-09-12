@@ -5,7 +5,7 @@ export function caculateCompletionPercentageAndDaysOverdue(
 ) {
     const currentDate = new Date();
     const timeDifferenceInMilisec =
-        currentDate.getTime() - cycle.cycle_start_date.getTime();
+        currentDate.getTime() - cycle.start_date.getTime();
     const MilisecInDay = 1000 * 60 * 60 * 24;
     const timeDifferenceInDays = Math.floor(
         timeDifferenceInMilisec / MilisecInDay

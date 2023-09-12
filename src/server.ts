@@ -23,7 +23,7 @@ app.get("/health-check", async (_req, res) => {
 });
 app.get("/", async (_req, res) => {
     try {
-        const prompt = "Nothing here";
+        const prompt = "Nothing here, try /cycles";
         res.json(prompt);
     } catch (error) {
         console.log("Error /Get", error);
@@ -46,9 +46,10 @@ app.get("/cycles", async (_req, res) => {
 
 export interface TaskCycleData {
     id: number;
-    cycle_name: string;
-    cycle_duration_days: number;
-    cycle_start_date: Date;
+    name: string;
+    duration_days: number;
+    start_date: Date;
+    avatar_url: string;
     completion_percentage?: number;
     days_overdue?: number;
 }
