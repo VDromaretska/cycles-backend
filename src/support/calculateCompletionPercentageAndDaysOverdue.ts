@@ -10,9 +10,9 @@ export function caculateCompletionPercentageAndDaysOverdue(
     const timeDifferenceInDays = Math.floor(
         timeDifferenceInMilisec / MilisecInDay
     );
-    const daysOverdue = timeDifferenceInDays - cycle.cycle_duration_days;
+    const daysOverdue = timeDifferenceInDays - cycle.duration_days;
     const completionPercentage =
-        (timeDifferenceInDays * 100) / cycle.cycle_duration_days;
+        (timeDifferenceInDays * 100) / cycle.duration_days;
 
     if (completionPercentage > 100) {
         return [completionPercentage, daysOverdue];
